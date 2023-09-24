@@ -1,4 +1,8 @@
-fastapi==0.95.2
+fastapi[all]
+psycopg2-binary
+fastapi_jwt_auth
 uvicorn==0.22.0
 black==23.3.0
 ruff==0.0.272
+sqlalchemy==2.0.21
+alembic==1.12.0
