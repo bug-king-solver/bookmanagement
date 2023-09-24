@@ -3,30 +3,32 @@
     <b-modal id="BookModal" :title="modalTitle" class="text-center" @ok="saveBook">
         <b-form ref="bookForm" @submit.prevent="saveBook">
             <b-form-group label="Name" label-for="book-name">
-                <b-form-input id="book-name" v-model="editedBook.name" required></b-form-input>
+                <b-form-input id="book-name" v-model="editedBook.title" required></b-form-input>
             </b-form-group>
             <b-form-group label="Number of Pages" label-for="book-pages">
                 <b-form-input id="book-pages" v-model="editedBook.pages" type="number" required></b-form-input>
             </b-form-group>
             <b-form-group label="Author" label-for="book-author">
-                <tree-select v-bind:selected-value.sync="editedBook.owner_id"></tree-select>
+                <tree-select v-bind:selected-value.sync="editedBook.owner_id" options="authorOptions"></tree-select>
             </b-form-group>
         </b-form>
     </b-modal>
 </template>
-<script>
-import { mapActions, mapGetters, mapState } from 'vuex';
-import TreeSelect from '~/components/common/partials/TreeSelect';
-import { MODAL_STATE } from '~/utils/data/constants';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { accessorType } from '../../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
 
-export default {
+const mapper = createMapper(accessorType);
+import { Book } from '../../store/type';
+import { Author } from '../../store/type';
+
+export default defineComponent({
     name: 'book-modal',
-    components: {
-        TreeSelect,
-    },
     data() {
         return {
-            editedBook: { id: null, name: '', pages: null, owner_id: null },
+            editedBook: { id: null, title: '', pages: 0, owner_id: null } as Book,
         };
     },
 
@@ -37,7 +39,8 @@ export default {
             } else this.$bvModal.hide('BookModal');
         },
         selected(newSelection) {
-            this.editedBook = { ...this.books.find((book) => book.id === newSelection) };
+            const selection: Book | undefined = this.books.find((book: Book) => book.id === newSelection);
+            if (selection) this.editedBook = cloneDeep(selection);
         },
         authors: {
             immediate: true,
@@ -49,28 +52,24 @@ export default {
         },
     },
     methods: {
-        ...mapActions('authors', ['fetchAuthors']),
-        ...mapActions('books', {
-            createBook: 'addBook',
-            updateBook: 'editBook',
-            deleteBook: 'deleteBook',
-        }),
-        ...mapActions('selection', ['hideModal']),
+        ...mapper('authors', ['fetchAuthors']),
+        ...mapper('books', ['addBook', 'editBook', 'deleteBook']),
+        ...mapper(['hideModal']),
         saveBook() {
             if (this.editedBook.owner_id == null) return;
             this.$bvModal.hide('BookModal');
-            if (this.modalState === MODAL_STATE.SHOWN_UPDATE) {
-                this.updateBook(this.editedBook);
-            } else if (this.modalState === MODAL_STATE.SHOWN_CREATE) {
-                this.createBook(this.editedBook);
-                this.editedBook.name = '';
+            if (this.isUpdate) {
+                this.editBook(this.editedBook);
+            } else if (this.isCreate) {
+                this.addBook(this.editedBook);
+                this.editedBook.title = '';
                 this.editedBook.id = null;
-                this.editedBook.pages = null;
+                this.editedBook.pages = 0;
             }
             this.hideModal();
         },
-        deleteBook(book) {
-            this.deleteBook(book.id);
+        removeBook(book: Book) {
+            this.deleteBook(book.id as number);
         },
         setInitialOwnerId() {
             if (this.authors.length > 0 && this.editedBook.owner_id === null) {
@@ -79,24 +78,25 @@ export default {
         },
     },
     computed: {
-        ...mapGetters('selection', ['isShown']),
-        ...mapState('authors', ['authors']),
-        ...mapState('selection', ['selected', 'modalState']),
-        ...mapState('books', ['books']),
+        ...mapper(['isCreate', 'isUpdate', 'isShown']),
+        ...mapper('authors', ['authors']),
+        ...mapper('books', ['books']),
         modalTitle() {
-            return this.modalState === MODAL_STATE.SHOWN_CREATE
-                ? 'Add Book'
-                : this.modalState === MODAL_STATE.SHOWN_UPDATE
-                ? 'Edit Book'
-                : '';
+            return this.isCreate ? 'Add Book' : this.isUpdate ? 'Edit Book' : '';
+        },
+        authorOptions() {
+            return this.authors.map((author: Author) => ({
+                id: author.id,
+                label: author.name,
+            }));
         },
     },
     mounted() {
-        this.$root.$on('bv::modal::hide', (bvEvent, modalId) => {
+        this.$root.$on('bv::modal::hide', () => {
             this.hideModal();
         });
         this.fetchAuthors();
         this.setInitialOwnerId();
     },
-};
+});
 </script>

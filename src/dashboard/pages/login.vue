@@ -15,12 +15,18 @@
     </div>
 </template>
 
-<script>
-import { mapActions } from 'vuex';
-import { LOCALSTORAGE_KEYS } from '~/utils/data/constants';
-import { getStoreItem } from '~/services/localstorage.service';
+<script lang="ts">
+import { LOCALSTORAGE_KEYS } from '../utils/constants';
+import { getStoreItem } from '../services/localstorage.service';
 
-export default {
+import { defineComponent } from 'vue';
+import { accessorType } from '../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
+import { POSITION } from 'vue-toastification';
+
+const mapper = createMapper(accessorType);
+export default defineComponent({
     data() {
         return {
             username: '',
@@ -28,34 +34,52 @@ export default {
         };
     },
     methods: {
-        ...mapActions('auth', ['loginAction']),
+        ...mapper('auth', ['loginAction']),
         handleSubmit() {
             this.loginAction({ username: this.username, password: this.password })
                 .then(() => {
-                    this.$notify({
-                        group: 'userNotification',
-                        type: 'success',
-                        text: `You have been logged in correctly!`,
+                    this.$toast.success('You have been logged in correctly!', {
+                        position: 'top-left' as POSITION,
+                        timeout: 5000,
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: true,
+                        closeButton: 'button',
+                        icon: true,
+                        rtl: false,
                     });
                     setTimeout(() => {
                         const lastCachedRoute = getStoreItem(LOCALSTORAGE_KEYS.LAST_ROUTE_BEFORE_LOGIN);
                         if (lastCachedRoute) {
-                            this.$router.push(lastCachedRoute);
+                            this.$router.push(lastCachedRoute as string);
                         } else {
                             this.$router.push('/authors');
                         }
                     }, 500);
                 })
                 .catch(() =>
-                    this.$notify({
-                        group: 'userNotification',
-                        type: 'danger',
-                        text: `Your credentials are incorrect`,
+                    this.$toast.error('Your credentials are incorrect', {
+                        position: 'top-right' as POSITION,
+                        timeout: 5000,
+                        closeOnClick: true,
+                        pauseOnFocusLoss: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        draggablePercent: 0.6,
+                        showCloseButtonOnHover: false,
+                        hideProgressBar: true,
+                        closeButton: 'button',
+                        icon: true,
+                        rtl: false,
                     })
                 );
         },
     },
-};
+});
 </script>
 
 <style scoped>

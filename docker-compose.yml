@@ -12,7 +12,7 @@ services:
     volumes:
       - ./src/api:/app  
 
-    restart: unless-stopped
+    restart: always
     networks:
       - myapp-network
 
@@ -25,7 +25,7 @@ services:
       - backend
     volumes:
       - ./src/dashboard:/app  
-    restart: unless-stopped
+    restart: always
     networks:
       - myapp-network
 

@@ -20,27 +20,27 @@
         <div class="mt-5">
             <nuxt />
         </div>
-        <notification-popup class="minipopup-area"></notification-popup>
     </div>
 </template>
 
-<script>
-import { mapActions, mapGetters } from 'vuex';
-import NotificationPopup from '~/components/common/partials/NotificationPopup';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { accessorType } from '../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
 
-export default {
-    components: {
-        NotificationPopup,
-    },
+const mapper = createMapper(accessorType);
+export default defineComponent({
+    components: {},
     computed: {
-        ...mapGetters('auth', ['auth']),
+        ...mapper('auth', ['auth']),
     },
     methods: {
-        ...mapActions('auth', ['setAuth', 'removeAuth']),
+        ...mapper('auth', ['setAuth', 'removeAuth']),
         logout() {
             this.removeAuth();
             this.$router.push('/login');
         },
     },
-};
+});
 </script>

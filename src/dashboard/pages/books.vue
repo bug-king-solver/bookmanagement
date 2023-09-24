@@ -8,8 +8,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import BookTable from '~/components/books/BookTable';
-import BookModal from '~/components/books/BookModal';
+import BookTable from '../components/books/BookTable.vue';
+import BookModal from '../components/books/BookModal.vue';
 
 export default Vue.extend({
     components: {

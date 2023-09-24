@@ -1,24 +1,21 @@
 // store/authors.ts
 
-import { getterTree, actionTree, mutationTree } from 'typed-vuex'
+import { getterTree, actionTree, mutationTree } from 'typed-vuex';
+import { Author } from './type';
 
 // Define mutation types
-export const SET_AUTHORS = 'SET_AUTHORS';
-export const ADD_AUTHOR = 'ADD_AUTHOR';
-export const EDIT_AUTHOR = 'EDIT_AUTHOR';
+const SET_AUTHORS = 'SET_AUTHORS';
+const ADD_AUTHOR = 'ADD_AUTHOR';
+const EDIT_AUTHOR = 'EDIT_AUTHOR';
 
-export interface Author {
-    id: number;
-    name: string;
-    // Add other properties as needed
-}
 
 export const state = () => ({
-    authors: [] as Author[],
+    authors: [] as Array<Author>,
 });
+// export type AuthorsState = ReturnType<typeof state>;
 
 export const getters = getterTree(state, {
-    authors: (state) => state.authors,
+    // authors: (state) => state.authors,
 });
 
 export const mutations = mutationTree(state, {
@@ -36,29 +33,32 @@ export const mutations = mutationTree(state, {
     },
 });
 
-export const actions = actionTree({ state, getters, mutations }, {
-    async fetchAuthors({ commit }) {
-        try {
-            const response = await this.$axios.$get('authors'); // Replace with your API endpoint
-            commit(SET_AUTHORS, response.data);
-        } catch (error) {
-            console.error('Error fetching authors:', error);
-        }
-    },
-    async addAuthor({ commit }, authorData: { name: string }) {
-        try {
-            const response = await this.$axios.$post('authors', { name: authorData.name }); // Replace with your API endpoint
-            commit(ADD_AUTHOR, response.data);
-        } catch (error) {
-            console.error('Error adding author:', error);
-        }
-    },
-    async editAuthor({ commit }, updatedAuthor: Author) {
-        try {
-            const response = await this.$axios.$put(`authors/${updatedAuthor.id}`, updatedAuthor); // Replace with your API endpoint
-            commit(EDIT_AUTHOR, response.data);
-        } catch (error) {
-            console.error('Error editing author:', error);
-        }
-    },
-});
+export const actions = actionTree(
+    { state, getters, mutations },
+    {
+        async fetchAuthors({ commit }) {
+            try {
+                const response = await this.$axios.$get('authors'); // Replace with your API endpoint
+                commit(SET_AUTHORS, response.data);
+            } catch (error) {
+                console.error('Error fetching authors:', error);
+            }
+        },
+        async addAuthor({ commit }, authorData: { name: string }) {
+            try {
+                const response = await this.$axios.$post('authors', { name: authorData.name }); // Replace with your API endpoint
+                commit(ADD_AUTHOR, response.data);
+            } catch (error) {
+                console.error('Error adding author:', error);
+            }
+        },
+        async editAuthor({ commit }, updatedAuthor: Author) {
+            try {
+                const response = await this.$axios.$put(`authors/${updatedAuthor.id}`, updatedAuthor); // Replace with your API endpoint
+                commit(EDIT_AUTHOR, response.data);
+            } catch (error) {
+                console.error('Error editing author:', error);
+            }
+        },
+    }
+);

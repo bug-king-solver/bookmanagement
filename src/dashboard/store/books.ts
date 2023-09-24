@@ -1,67 +1,22 @@
-import { ActionTree, GetterTree, MutationTree } from 'vuex';
-import { RootState } from '.';
-import apiClient from '~/utils/api';
-
+import { getterTree, actionTree, mutationTree } from 'typed-vuex';
+import { Book } from './type';
 // Define mutation types
-export const SET_BOOKS = 'SET_BOOKS';
-export const ADD_BOOK = 'ADD_BOOK';
-export const EDIT_BOOK = 'EDIT_BOOK';
-export const REMOVE_BOOK = 'REMOVE_BOOK';
+const SET_BOOKS = 'SET_BOOKS';
+const ADD_BOOK = 'ADD_BOOK';
+const EDIT_BOOK = 'EDIT_BOOK';
+const REMOVE_BOOK = 'REMOVE_BOOK';
 
-export interface Book {
-    id: number;
-    title: string;
-    author: string;
-    owner_id: number;
-    // Add other properties as needed
-}
 
-export const state = (): { books: Array<Book> } => ({
-    books: [],
+export const state = () => ({
+    books: [] as Array<Book>,
 });
 
-export type BooksState = ReturnType<typeof state>;
+// export type BooksState = ReturnType<typeof state>;
 
-export const getters: GetterTree<BooksState, RootState> = {
-    books: (state) => state.books,
-};
-
-export const actions: ActionTree<BooksState, RootState> = {
-    async fetchBooks({ commit }) {
-        try {
-            const response = await this.$axios.$get(`books`);
-            commit(SET_BOOKS, response.data);
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    async addBook({ commit }, book: Book) {
-        try {
-            const response = await this.$axios.$post(`users/${book.owner_id}/books`, book);
-            commit(ADD_BOOK, response.data);
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    async editBook({ commit }, book: Book) {
-        try {
-            const response = await this.$axios.$put(`books/${book.id}`, book);
-            commit(EDIT_BOOK, response.data);
-        } catch (error) {
-            console.error(error);
-        }
-    },
-    async deleteBook({ commit }, bookId: number) {
-        try {
-            await this.$axios.$delete(`books/${bookId}`);
-            commit(REMOVE_BOOK, bookId);
-        } catch (error) {
-            console.error(error);
-        }
-    },
-};
-
-export const mutations: MutationTree<BooksState> = {
+export const getters = getterTree(state, {
+    // books: (state) => state.books,
+});
+export const mutations = mutationTree(state, {
     [SET_BOOKS](state, books: [Book]) {
         state.books = books;
     },
@@ -77,4 +32,42 @@ export const mutations: MutationTree<BooksState> = {
     [REMOVE_BOOK](state, bookId: number) {
         state.books = state.books.filter((book) => book.id !== bookId);
     },
-};
+});
+
+export const actions = actionTree(
+    { state, getters, mutations },
+    {
+        async fetchBooks({ commit }) {
+            try {
+                const response = await this.$axios.$get(`books`);
+                commit(SET_BOOKS, response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        async addBook({ commit }, book: Book) {
+            try {
+                const response = await this.$axios.$post(`users/${book.owner_id}/books`, book);
+                commit(ADD_BOOK, response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        async editBook({ commit }, book: Book) {
+            try {
+                const response = await this.$axios.$put(`books/${book.id}`, book);
+                commit(EDIT_BOOK, response.data);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+        async deleteBook({ commit }, bookId: number) {
+            try {
+                await this.$axios.$delete(`books/${bookId}`);
+                commit(REMOVE_BOOK, bookId);
+            } catch (error) {
+                console.error(error);
+            }
+        },
+    }
+);

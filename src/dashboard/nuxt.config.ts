@@ -27,11 +27,13 @@ const config: NuxtConfig = {
 
     components: true,
 
-    buildModules: ['@nuxt/typescript-build', 'bootstrap-vue/nuxt', 'nuxt-typed-vuex'],
+    buildModules: [
+        '@nuxt/typescript-build',
+        'bootstrap-vue/nuxt',
+        'nuxt-typed-vuex',
+    ],
 
     modules: ['@nuxtjs/axios', '@nuxtjs/proxy', 'bootstrap-vue/nuxt'],
-
-    serverMiddleware: [{ path: '/api', handler: '@/server/middleware/cors.ts' }],
 
     router: {
         middleware: ['auth'],
@@ -48,7 +50,6 @@ const config: NuxtConfig = {
             baseURL: process.env.BASE_URL,
         },
     },
-
     axios: {
         prefix: '/api',
         baseURL: process.env.BASE_API_URL,

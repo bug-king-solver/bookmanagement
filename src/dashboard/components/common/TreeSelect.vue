@@ -1,45 +1,54 @@
 <template>
     <div>
-        <treeselect :options="options" v-model:value="value" :multiple="multiple">
-            <div slot="value-label" slot-scope="{ node }">{{ node.raw.label }}</div>
-        </treeselect>
+        <treeselect :options="options" v-model="value" :multiple="multiple"> </treeselect>
     </div>
 </template>
-<script>
-import { mapState, mapActions, mapGetters } from 'vuex';
+<script lang="ts">
+import { defineComponent, PropType } from 'vue';
+import { accessorType } from '../../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
+
+const mapper = createMapper(accessorType);
 import Treeselect from '@riophae/vue-treeselect';
 // import the styles
 import '@riophae/vue-treeselect/dist/vue-treeselect.css';
-export default {
+
+interface Option {
+    id: number;
+    label: string;
+}
+export default defineComponent({
     components: { Treeselect },
     name: 'tree-select',
     emits: ['update:selectedValue'],
-    props: ['selectedValue'],
-    data: () => ({
-        multiple: false,
-    }),
+
+    props: {
+        selectedValue: { type: Number, required: true },
+        options: { type: Object as PropType<Array<Option>>, required: true },
+    },
+
+    data() {
+        return {
+            multiple: false,
+        };
+    },
     methods: {
-        ...mapActions('authors', ['fetchAuthors']),
+        ...mapper('authors', ['fetchAuthors']),
     },
     computed: {
+        ...mapper('authors', ['authors']),
         value: {
-            get() {
+            get(): number {
                 return this.selectedValue;
             },
-            set(newValue) {
+            set(newValue: string) {
                 this.$emit('update:selectedValue', newValue);
             },
-        },
-        ...mapState('authors', ['authors']),
-        options() {
-            return this.authors.map((author) => ({
-                id: author.id,
-                label: author.name,
-            }));
         },
     },
     mounted() {
         this.fetchAuthors();
     },
-};
+});
 </script>

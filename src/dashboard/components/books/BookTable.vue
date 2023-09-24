@@ -28,15 +28,17 @@
         </div>
     </div>
 </template>
-<script>
-import { mapActions, mapState } from 'vuex';
-import TreeSelect from '~/components/common/partials/TreeSelect';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { accessorType } from '../../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
 
-export default {
+const mapper = createMapper(accessorType);
+import { Author } from '../../store/type';
+
+export default defineComponent({
     name: 'book-table',
-    components: {
-        TreeSelect,
-    },
     data() {
         return {
             searchText: '',
@@ -45,15 +47,13 @@ export default {
         };
     },
     methods: {
-        ...mapActions('authors', ['fetchAuthors']),
-        ...mapActions('books', { fetchBooks: 'fetchBooks' }),
-        ...mapActions('selection', {
-            showModal: 'showModal',
-        }),
+        ...mapper('authors', ['fetchAuthors']),
+        ...mapper('books', ['fetchBooks']),
+        ...mapper(['showModal']),
     },
     computed: {
-        ...mapState('authors', ['authors']),
-        ...mapState('books', ['books']),
+        ...mapper('authors', ['authors']),
+        ...mapper('books', ['books']),
         tableFields() {
             return [
                 { key: 'name', label: 'Name' },
@@ -62,7 +62,7 @@ export default {
             ];
         },
         authorOptions() {
-            return this.authors.map((author) => ({
+            return this.authors.map((author: Author) => ({
                 value: author.id,
                 text: author.name,
             }));
@@ -75,5 +75,5 @@ export default {
         this.fetchBooks();
         this.fetchAuthors();
     },
-};
+});
 </script>

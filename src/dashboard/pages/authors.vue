@@ -8,8 +8,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import AuthorTable from '~/components/authors/AuthorTable';
-import AuthorModal from '~/components/authors/AuthorModal';
+import AuthorTable from '../components/authors/AuthorTable.vue';
+import AuthorModal from '../components/authors/AuthorModal.vue';
 
 export default Vue.extend({
     components: {

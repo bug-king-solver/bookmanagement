@@ -12,10 +12,10 @@ RUN npm install
 COPY . /app
 
 # Build the Nuxt.js application
-RUN npm run build
+# RUN npm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the Nuxt.js app
-CMD ["npm", "start"]
+CMD ["npm", "run","dev"]

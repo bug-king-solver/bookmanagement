@@ -28,9 +28,14 @@
         </div>
     </div>
 </template>
-<script>
-import { mapActions, mapState } from 'vuex';
-export default {
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { accessorType } from '../../store';
+import { cloneDeep } from 'lodash';
+import { createMapper } from 'typed-vuex';
+const mapper = createMapper(accessorType);
+
+export default defineComponent({
     data() {
         return {
             searchText: '',
@@ -39,15 +44,15 @@ export default {
         };
     },
     methods: {
-        ...mapActions('authors', { fetchAuthors: 'fetchAuthors' }),
-        ...mapActions('selection', ['showModal']),
+        ...mapper('authors', ['fetchAuthors']),
+        ...mapper(['showModal']),
     },
     mounted() {
         // Dispatch Vuex action to fetch authors data
         this.fetchAuthors();
     },
     computed: {
-        ...mapState('authors', ['authors']),
+        ...mapper('authors', ['authors']),
 
         tableFields() {
             return [
@@ -59,5 +64,5 @@ export default {
             return this.authors.length;
         },
     },
-};
+});
 </script>
