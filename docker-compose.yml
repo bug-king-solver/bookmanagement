@@ -1,0 +1,48 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: src/api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    env_file:
+      - ./src/api/.env
+    volumes:
+      - ./src/api:/app  
+
+    restart: unless-stopped
+    networks:
+      - myapp-network
+
+  frontend:
+    build:
+      context: src/dashboard
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./src/dashboard:/app  
+    restart: unless-stopped
+    networks:
+      - myapp-network
+
+  database:
+    image: postgres:13
+    env_file:
+      - ./src/api/.env
+    ports:
+      - "5432:5432" 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Define a named volume for PostgreSQL data
+    networks:
+      - myapp-network
+
+networks:
+  myapp-network:
+
+volumes:
+  postgres_data:  # Define the named volume for PostgreSQL data
+
