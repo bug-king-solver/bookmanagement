@@ -28,52 +28,36 @@
         </div>
     </div>
 </template>
+
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { accessorType } from '../../store';
-import { cloneDeep } from 'lodash';
-import { createMapper } from 'typed-vuex';
-
-const mapper = createMapper(accessorType);
-import { Author } from '../../store/type';
-
+import { defineComponent, ref, computed, onMounted } from '@nuxtjs/composition-api';
+import { useAccessor } from '../../hooks/useAccessor';
 export default defineComponent({
-    name: 'book-table',
-    data() {
-        return {
-            searchText: '',
-            perPage: 7,
-            currentPage: 1,
-        };
-    },
-    methods: {
-        ...mapper('authors', ['fetchAuthors']),
-        ...mapper('books', ['fetchBooks']),
-        ...mapper(['showModal']),
-    },
-    computed: {
-        ...mapper('authors', ['authors']),
-        ...mapper('books', ['books']),
-        tableFields() {
-            return [
-                { key: 'name', label: 'Name' },
-                { key: 'author', label: 'Author' },
-                { key: 'pages', label: 'Number of Pages' },
-            ];
-        },
-        authorOptions() {
-            return this.authors.map((author: Author) => ({
-                value: author.id,
-                text: author.name,
-            }));
-        },
-        rows() {
-            return this.books.length;
-        },
-    },
-    mounted() {
-        this.fetchBooks();
-        this.fetchAuthors();
+    setup() {
+        const {
+            books: { books, fetchBooks },
+            authors: { authors, fetchAuthors },
+            showModal,
+        } = useAccessor();
+
+        const searchText = ref('');
+        const perPage = ref(7);
+        const currentPage = ref(1);
+
+        const tableFields = computed(() => [
+            { key: 'name', label: 'Name' },
+            { key: 'author', label: 'Author' },
+            { key: 'pages', label: 'Number of Pages' },
+        ]);
+
+        const rows = computed(() => books.length);
+
+        onMounted(() => {
+            fetchBooks();
+            fetchAuthors();
+        });
+
+        return { searchText, perPage, currentPage, tableFields, rows, authors, showModal, books };
     },
 });
 </script>

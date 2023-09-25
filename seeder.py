@@ -13,7 +13,6 @@ try:
 
     cursor = connection.cursor()
 
-
 except (Exception, Error) as error:
     print("Error while connecting to PostgreSQL:", error)
 

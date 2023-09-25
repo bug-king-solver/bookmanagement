@@ -1,6 +1,6 @@
 <template>
     <!-- Add/edit book modal -->
-    <b-modal id="BookModal" :title="modalTitle" class="text-center" @ok="saveBook">
+    <b-modal ref="modalRef" id="BookModal" :title="modalTitle" class="text-center" @ok="saveBook" v-model="isShown">
         <b-form ref="bookForm" @submit.prevent="saveBook">
             <b-form-group label="Name" label-for="book-name">
                 <b-form-input id="book-name" v-model="editedBook.title" required></b-form-input>
@@ -9,94 +9,111 @@
                 <b-form-input id="book-pages" v-model="editedBook.pages" type="number" required></b-form-input>
             </b-form-group>
             <b-form-group label="Author" label-for="book-author">
-                <tree-select v-bind:selected-value.sync="editedBook.owner_id" options="authorOptions"></tree-select>
+                <tree-select v-bind:selected-value.sync="editedBook.owner_id" :options="authorOptions"></tree-select>
             </b-form-group>
         </b-form>
     </b-modal>
 </template>
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { accessorType } from '../../store';
-import { cloneDeep } from 'lodash';
-import { createMapper } from 'typed-vuex';
 
-const mapper = createMapper(accessorType);
-import { Book } from '../../store/type';
-import { Author } from '../../store/type';
+<script lang="ts">
+import { ref, onMounted, watch, computed, defineComponent } from '@nuxtjs/composition-api';
+import { cloneDeep } from 'lodash';
+import { useAccessor } from '../../hooks/useAccessor';
+import { Author, Book } from '../../store/type';
 
 export default defineComponent({
-    name: 'book-modal',
-    data() {
-        return {
-            editedBook: { id: null, title: '', pages: 0, owner_id: null } as Book,
-        };
-    },
+    setup(props) {
+        const {
+            books: { books, fetchBooks, editBook, addBook, deleteBook },
+            authors: { authors, fetchAuthors },
+            isShown,
+            selected,
+            hideModal,
+            isCreate,
+            isUpdate,
+        } = useAccessor();
 
-    watch: {
-        isShown(newShown) {
-            if (newShown) {
-                this.$bvModal.show('BookModal');
-            } else this.$bvModal.hide('BookModal');
-        },
-        selected(newSelection) {
-            const selection: Book | undefined = this.books.find((book: Book) => book.id === newSelection);
-            if (selection) this.editedBook = cloneDeep(selection);
-        },
-        authors: {
-            immediate: true,
-            handler(newAuthors) {
-                if (newAuthors.length > 0 && this.editedBook.owner_id === null) {
-                    this.setInitialOwnerId();
-                }
-            },
-        },
-    },
-    methods: {
-        ...mapper('authors', ['fetchAuthors']),
-        ...mapper('books', ['addBook', 'editBook', 'deleteBook']),
-        ...mapper(['hideModal']),
-        saveBook() {
-            if (this.editedBook.owner_id == null) return;
-            this.$bvModal.hide('BookModal');
-            if (this.isUpdate) {
-                this.editBook(this.editedBook);
-            } else if (this.isCreate) {
-                this.addBook(this.editedBook);
-                this.editedBook.title = '';
-                this.editedBook.id = null;
-                this.editedBook.pages = 0;
-            }
-            this.hideModal();
-        },
-        removeBook(book: Book) {
-            this.deleteBook(book.id as number);
-        },
-        setInitialOwnerId() {
-            if (this.authors.length > 0 && this.editedBook.owner_id === null) {
-                this.editedBook.owner_id = this.authors[0].id;
-            }
-        },
-    },
-    computed: {
-        ...mapper(['isCreate', 'isUpdate', 'isShown']),
-        ...mapper('authors', ['authors']),
-        ...mapper('books', ['books']),
-        modalTitle() {
-            return this.isCreate ? 'Add Book' : this.isUpdate ? 'Edit Book' : '';
-        },
-        authorOptions() {
-            return this.authors.map((author: Author) => ({
+        const modalRef = ref(null);
+
+        const editedBook = ref<Book>({ id: null, title: '', pages: 0, owner_id: null });
+
+        const searchText = ref('');
+        const perPage = ref(7);
+        const currentPage = ref(1);
+
+        const tableFields = computed(() => [
+            { key: 'name', label: 'Name' },
+            { key: 'author', label: 'Author' },
+            { key: 'pages', label: 'Number of Pages' },
+        ]);
+
+        const rows = computed(() => books.length);
+
+        const modalTitle = computed(() => (isCreate ? 'Add Book' : isUpdate ? 'Edit Book' : ''));
+
+        const authorOptions = computed(() =>
+            authors.map((author: Author) => ({
                 id: author.id,
                 label: author.name,
-            }));
-        },
-    },
-    mounted() {
-        this.$root.$on('bv::modal::hide', () => {
-            this.hideModal();
+            }))
+        );
+
+        const setInitialOwnerId = () => {
+            if (authors.length > 0 && editedBook.value.owner_id === null) {
+                editedBook.value.owner_id = authors[0].id;
+            }
+        };
+
+        const saveBook = () => {
+            if (editedBook.value.owner_id == null) return;
+            if (isUpdate) {
+                editBook(editedBook.value);
+            } else if (isCreate) {
+                addBook(editedBook.value);
+                editedBook.value.title = '';
+                editedBook.value.id = null;
+                editedBook.value.pages = 0;
+            }
+            hideModal();
+        };
+
+        const removeBook = (book: Book) => {
+            deleteBook(book.id as number);
+        };
+
+        onMounted(() => {
+            fetchBooks();
+            fetchAuthors();
         });
-        this.fetchAuthors();
-        this.setInitialOwnerId();
+        watch(
+            () => selected,
+            (newSelection) => {
+                const selection: Book | undefined = books.find((book: Book) => book.id === newSelection);
+                if (selection) editedBook.value = cloneDeep(selection);
+            }
+        );
+
+        watch(
+            authors,
+            (newAuthors) => {
+                if (newAuthors.length > 0 && editedBook.value.owner_id === null) {
+                    setInitialOwnerId();
+                }
+            },
+            { immediate: true }
+        );
+        return {
+            searchText,
+            perPage,
+            currentPage,
+            tableFields,
+            rows,
+            modalTitle,
+            authorOptions,
+            isShown,
+            saveBook,
+            editedBook,
+        };
     },
 });
 </script>

@@ -8,7 +8,6 @@ const SET_AUTHORS = 'SET_AUTHORS';
 const ADD_AUTHOR = 'ADD_AUTHOR';
 const EDIT_AUTHOR = 'EDIT_AUTHOR';
 
-
 export const state = () => ({
     authors: [] as Array<Author>,
 });

@@ -6,7 +6,6 @@ const ADD_BOOK = 'ADD_BOOK';
 const EDIT_BOOK = 'EDIT_BOOK';
 const REMOVE_BOOK = 'REMOVE_BOOK';
 
-
 export const state = () => ({
     books: [] as Array<Book>,
 });

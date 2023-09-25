@@ -27,11 +27,7 @@ const config: NuxtConfig = {
 
     components: true,
 
-    buildModules: [
-        '@nuxt/typescript-build',
-        'bootstrap-vue/nuxt',
-        'nuxt-typed-vuex',
-    ],
+    buildModules: ['@nuxt/typescript-build', '@nuxtjs/composition-api/module', 'bootstrap-vue/nuxt', 'nuxt-typed-vuex'],
 
     modules: ['@nuxtjs/axios', '@nuxtjs/proxy', 'bootstrap-vue/nuxt'],
 

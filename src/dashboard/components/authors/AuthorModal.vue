@@ -11,64 +11,62 @@
         <book-crud-table v-if="selected"></book-crud-table>
     </b-modal>
 </template>
+
 <script lang="ts">
-import { defineComponent } from 'vue';
-
-import { accessorType } from '../../store';
-
+import { ref, computed, onMounted, watch, defineComponent } from '@nuxtjs/composition-api';
 import BookCrudTable from '../books/BookCrudTable.vue';
-import { Author } from '../../store/type';
+import { useAccessor } from '../../hooks/useAccessor'; // Replace with the actual path to your store
 import { cloneDeep } from 'lodash';
-import { createMapper } from 'typed-vuex';
-
-const mapper = createMapper(accessorType);
-
+import { Author } from '../../store/type';
 export default defineComponent({
-    components: {
-        BookCrudTable,
-    },
-    data() {
-        return {
-            shown: false,
-            author: { name: '', id: null } as Author,
-        };
-    },
-    watch: {
-        isShown(newShown) {
-            this.shown = newShown;
-        },
-        selected(newSelection) {
-            const selection = this.authors.find((author: Author) => author.id === newSelection);
-            if (selection) this.author = cloneDeep(selection);
-        },
-    },
-    methods: {
-        ...mapper('authors', ['editAuthor', 'addAuthor', 'fetchAuthors']),
-        ...mapper('hideModal'),
-        mutateAuthor() {
-            if (this.isUpdate) {
+    components:{BookCrudTable},
+    setup() {
+        const {
+            authors: { authors, editAuthor, addAuthor, fetchAuthors },
+            isShown,
+            hideModal,
+        } = useAccessor(); // Replace with the actual structure of your accessor
+
+        const shown = ref(false);
+        const author = ref({ name: '', id: null } as Author);
+
+        const selected = computed(() => author.value.id);
+        const isCreate = computed(() => selected.value === null);
+        const isUpdate = computed(() => !isCreate.value);
+
+        const modalTitle = computed(() => (isCreate.value ? 'Add Author' : isUpdate.value ? 'Edit Author' : ''));
+
+        const mutateAuthor = () => {
+            if (isUpdate.value) {
                 // Dispatch Vuex action to edit author
-                this.editAuthor({ name: this.author.name, id: this.author.id });
-            } else if (this.isCreate) {
-                // Dispatch Vuex action to add new author
-                this.addAuthor({ name: this.author.name });
-                this.author = { id: null, name: '' };
+                editAuthor({ name: author.value.name, id: author.value.id });
+            } else if (isCreate.value) {
+                // Dispatch Vuex action to add a new author
+                addAuthor({ name: author.value.name });
+                author.value = { id: null, name: '' };
             }
-        },
-    },
-    mounted() {
-        // Dispatch Vuex action to fetch authors data
-        this.fetchAuthors();
-        this.$root.$on('bv::modal::hide', () => {
-            this.hideModal();
+        };
+
+        const hideModalListener = () => {
+            hideModal();
+        };
+
+        onMounted(() => {
+            // Dispatch Vuex action to fetch authors data
+            fetchAuthors();
+            // Register the hideModalListener
+            window.addEventListener('bv::modal::hide', hideModalListener);
         });
-    },
-    computed: {
-        ...mapper(['selected', 'isShown', 'isCreate', 'isUpdate']),
-        ...mapper('authors', ['authors']),
-        modalTitle() {
-            return this.isCreate ? 'Add Author' : this.isUpdate ? 'Edit Author' : '';
-        },
+
+        const selectedAuthor = computed(() => authors.find((author: Author) => author.id === selected.value));
+
+        watch(selectedAuthor, () => {
+            if (selectedAuthor.value) {
+                // Clone the selected author data
+                author.value = cloneDeep(selectedAuthor.value);
+            }
+        });
+        return { shown, modalTitle, mutateAuthor, author, selected };
     },
 });
 </script>

@@ -70,90 +70,99 @@
     </div>
 </template>
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { accessorType } from '../../store';
-import { cloneDeep } from 'lodash';
-import { createMapper } from 'typed-vuex';
-import { Book } from '../../store/type';
-
-const mapper = createMapper(accessorType);
 interface BookItem extends Book {
     editMode: boolean;
     editTitle: string;
     editPages: number;
 }
+import { ref, computed, defineComponent } from '@nuxtjs/composition-api';
+import { useAccessor } from '../../hooks/useAccessor'; // Replace with the actual path to your store
+import { cloneDeep } from 'lodash';
+import { Book } from '../../store/type';
 export default defineComponent({
-    name: 'book-crud-table',
-    data() {
-        return {
-            perPage: 4 as number,
-            currentPage: 1 as number,
-            newBook: {} as Book,
-            tableFields: [
-                { key: 'name', label: 'Name' },
-                { key: 'pages', label: 'Number of Pages' },
-                { key: 'actions', label: 'Actions' },
-            ],
-        };
-    },
-    methods: {
-        ...mapper('books', ['fetchBooks', 'addBook', 'editBook', 'deleteBook']),
-        toggleEditMode(book: BookItem) {
-            book.editMode = !book.editMode;
-        },
-        saveChanges(book: BookItem) {
-            const newBook: Book = {
-                id: book.id,
-                title: book.editTitle,
-                pages: book.editPages,
-                owner_id: book.owner_id,
-            };
-            this.editBook(newBook);
-            book.title = newBook.title;
-            book.pages = newBook.pages;
-            book.editMode = false;
-        },
-        cancelEdit(book: BookItem) {
-            book.editMode = false;
-            book.editTitle = book.title;
-            book.editPages = book.pages;
-        },
-        createBook() {
-            const newBook: Book = {
-                id: null,
-                title: this.newBook.title,
-                pages: this.newBook.pages,
-                owner_id: this.selected as number,
-            };
-            this.addBook(newBook);
+    setup() {
+        const {
+            books: { books, fetchBooks, addBook, editBook, deleteBook },
+            selected,
+        } = useAccessor(); // Replace with the actual structure of your accessor
 
-            this.books.unshift(newBook);
-            this.newBook.title = '';
-            this.newBook.pages = 0;
-        },
-        removeBook(book: Book) {
-            this.deleteBook(book.id as number);
-        },
-    },
-    computed: {
-        ...mapper(['selected']),
-        ...mapper('books', ['books']),
-        shownBooks() {
-            return this.books
-                .filter((book: Book) => book.owner_id === this.selected)
+        const newBook = ref({ title: '', pages: 0 });
+        const perPage = ref(4);
+        const currentPage = ref(1);
+
+        const tableFields = computed(() => [
+            { key: 'name', label: 'Name' },
+            { key: 'pages', label: 'Number of Pages' },
+            { key: 'actions', label: 'Actions' },
+        ]);
+
+        const shownBooks = computed(() => {
+            return books
+                .filter((book: Book) => book.owner_id === selected)
                 .map((book: Book) => ({
                     ...book,
                     editMode: false,
                     editTitle: book.title,
                     editPages: book.pages,
                 }));
-        },
-        rows() {
-            return this.books.length;
-        },
-    },
-    mounted() {
-        this.fetchBooks();
+        });
+
+        const rows = computed(() => books.length);
+
+        const toggleEditMode = (book: BookItem) => {
+            book.editMode = !book.editMode;
+        };
+
+        const saveChanges = (book: BookItem) => {
+            const newBookData = {
+                id: book.id,
+                title: book.editTitle,
+                pages: book.editPages,
+                owner_id: book.owner_id,
+            };
+            editBook(newBookData);
+            book.title = newBookData.title;
+            book.pages = newBookData.pages;
+            book.editMode = false;
+        };
+
+        const cancelEdit = (book: BookItem) => {
+            book.editMode = false;
+            book.editTitle = book.title;
+            book.editPages = book.pages;
+        };
+
+        const createBook = () => {
+            const newBookData = {
+                id: null,
+                title: newBook.value.title,
+                pages: newBook.value.pages,
+                owner_id: selected,
+            };
+            addBook(newBookData);
+
+            books.unshift(newBookData);
+            newBook.value.title = '';
+            newBook.value.pages = 0;
+        };
+
+        const removeBook = (book: BookItem) => {
+            deleteBook(book.id as number);
+        };
+
+        return {
+            newBook,
+            perPage,
+            currentPage,
+            tableFields,
+            shownBooks,
+            rows,
+            toggleEditMode,
+            saveChanges,
+            cancelEdit,
+            createBook,
+            removeBook,
+        };
     },
 });
 </script>

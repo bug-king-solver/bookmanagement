@@ -13,7 +13,6 @@ class Author(Base):
     name = Column(String, unique=True, index=True)
     books = relationship("Book", back_populates="owner")
 
-
 class Book(Base):
     __tablename__ = "books"
 
@@ -22,7 +21,6 @@ class Book(Base):
     pages = Column(Integer)
     owner_id = Column(Integer, ForeignKey("authors.id"))
     owner = relationship("Author", back_populates="books")
-
 
 class User(Base):
     __tablename__ = "users"

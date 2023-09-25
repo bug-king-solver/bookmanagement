@@ -7,11 +7,11 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 import AuthorTable from '../components/authors/AuthorTable.vue';
 import AuthorModal from '../components/authors/AuthorModal.vue';
+import { defineComponent } from '@nuxtjs/composition-api';
 
-export default Vue.extend({
+export default defineComponent({
     components: {
         AuthorModal,
         AuthorTable,
