@@ -58,10 +58,3 @@ To stop the Dockerized PostgreSQL database, use the following command:
 ```bash
 make stop-db
 ```
-
-## Usage
-
-## Contribution
-
-## License
-```
