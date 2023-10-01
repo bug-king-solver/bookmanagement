@@ -6,71 +6,54 @@ ENV_FILE := ./src/api/.env
 MIGRATION_DIR := ./src/api/alembic
 MIGRATION_DESCRIPTION := "Auto-generated migration"
 VENV_NAME := ./src/api/myenv# Adjust this with your desired virtual environment name
+SEED_FILE := seed.py
 
-# DATABASE_URL := $(shell grep -v '^#' $(ENV_FILE) | xargs)
 
+.PHONY: setup
+setup:
+	@echo "Setup Server..."
+	docker compose build 
 
-.PHONY: start
-start:
+.PHONY: run-server
+run-server:
 	@echo "Starting..."
-	docker-compose up --build
-
-.PHONY: venv
-venv:
-	@echo "Installing Alembic and dependencies..."
-	pip install virtualenv
-	python3 -m venv $(VENV_NAME)
-	@echo "Activate the virtual environment using:"
-	@echo "source $(VENV_NAME)/bin/activate"
-	@echo "Then run 'make install-requirements' to install project dependencies."
+	docker compose up 
 
 .PHONY: install-requirements
 install-requirements:
 	@echo "Installing project dependencies..."
-	. $(VENV_NAME)/bin/activate && pip install sqlalchemy alembic decouple
+	pip3 install passlib python-dotenv psycopg2-binary sqlalchemy alembic decouple
 
-.PHONY: init-db
-init-db:
-	@echo "Initializing database..."
-	mkdir -p ${MIGRATION_DIR}/versions
-	. $(VENV_NAME)/bin/activate && alembic init $(MIGRATION_DIR)
+.PHONY: run-db
+run-db:
+	@echo "Running postgresql server..."
+	docker compose up --no-deps -d database
 
-setup: venv install-requirements init-db
-	@echo "Making setup for migration"
+.PHONY: stop-db
+stop-db:
+	@echo "Stopping postgresql server..."
+	docker compose down
 
 .PHONY: create-migration
 create-migration:
 	@echo "Creating a new migration..."
-	docker-compose up --no-deps -d database
-	. $(VENV_NAME)/bin/activate && alembic revision --autogenerate -m $(MIGRATION_DESCRIPTION)
-	docker-compose down
+	alembic upgrade head
+	alembic revision --autogenerate -m $(MIGRATION_DESCRIPTION)
 
-.PHONY: upgrade-db
-upgrade-db:
-	@echo "Upgrading database..."
-	docker-compose up --no-deps -d database 
-	. $(VENV_NAME)/bin/activate && alembic upgrade head
-	docker-compose down
+.PHONY: run-migrate
+run-migrate: 
+	@echo "Doing migration"
+	alembic upgrade head
 
-.PHONY: migrate
-migrate: upgrade-db create-migration upgrade-db
-	@echo "Database migration complete."
+.PHONY: super-user
+super-user:
+	@echo "Make super user..."
+	cd src/api && python3 ${SEED_FILE}
 
 .PHONY: rollback-db
 rollback-db:
 	@echo "Rolling back database..."
-	docker-compose up --no-deps -d database 
-	. $(VENV_NAME)/bin/activate && alembic downgrade -1
-	docker-compose down
-
-.PHONY: rollback
-rollback: rollback-db
-	@echo "Database rollback complete."
-
-.PHONY: clean-pyc
-clean-pyc:
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -rf {} +
+	alembic downgrade -1
 
 .PHONY: clean
 clean: clean-pyc

@@ -13,6 +13,7 @@ declare module 'vue/types/vue' {
         // $services: ReturnType<typeof services>;
         // $bvModal: any;
         $accessor: typeof accessorType;
+        $toast: any;
     }
 }
 
@@ -25,5 +26,6 @@ declare module '@nuxt/types' {
 
     interface Context {
         $accessor: typeof accessorType;
+        $toast: any;
     }
 }

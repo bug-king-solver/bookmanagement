@@ -1,7 +1,7 @@
 <template>
-    <div class="container mt-4">
-        <b-container class="login-container">
-            <h1>Login</h1>
+    <div class="custom-container mt-4">
+        <b-container class="custom-login-container">
+            <h1 class="custom-heading">Login</h1>
             <b-form @submit.prevent="handleSubmit">
                 <b-form-group label="Username" label-for="username">
                     <b-form-input id="username" v-model="username" required></b-form-input>
@@ -9,11 +9,34 @@
                 <b-form-group label="Password" label-for="password">
                     <b-form-input id="password" v-model="password" type="password" required></b-form-input>
                 </b-form-group>
-                <b-button type="submit" variant="primary">Submit</b-button>
+                <b-button type="submit" variant="success" class="custom-submit-button">Submit</b-button>
             </b-form>
         </b-container>
     </div>
 </template>
+
+<style scoped>
+.custom-container {
+    max-width: 400px;
+    margin: auto;
+}
+
+.custom-login-container {
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-heading {
+    color: #007bff;
+}
+
+.custom-submit-button {
+    margin-top: 20px;
+}
+</style>
 
 <script lang="ts">
 import { LOCALSTORAGE_KEYS } from '../utils/constants';
@@ -21,7 +44,6 @@ import { getStoreItem } from '../services/localstorage.service';
 
 import { defineComponent } from 'vue';
 import { accessorType } from '../store';
-import { cloneDeep } from 'lodash';
 import { createMapper } from 'typed-vuex';
 import { POSITION } from 'vue-toastification';
 
@@ -39,7 +61,7 @@ export default defineComponent({
             this.loginAction({ username: this.username, password: this.password })
                 .then(() => {
                     this.$toast.success('You have been logged in correctly!', {
-                        position: 'top-left' as POSITION,
+                        position: 'top-right' as POSITION,
                         timeout: 5000,
                         closeOnClick: true,
                         pauseOnFocusLoss: true,
@@ -61,8 +83,12 @@ export default defineComponent({
                         }
                     }, 500);
                 })
-                .catch(() =>
-                    this.$toast.error('Your credentials are incorrect', {
+                .catch((error: any) => {
+                    let errorMessage: string;
+                    if (error.response && error.response.data && error.response.data.detail)
+                        errorMessage = error.response.data.detail;
+                    else errorMessage = `Your credentials are incorrect`;
+                    this.$toast.error(errorMessage, {
                         position: 'top-right' as POSITION,
                         timeout: 5000,
                         closeOnClick: true,
@@ -75,8 +101,8 @@ export default defineComponent({
                         closeButton: 'button',
                         icon: true,
                         rtl: false,
-                    })
-                );
+                    });
+                });
         },
     },
 });

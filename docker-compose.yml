@@ -13,21 +13,25 @@ services:
       - ./src/api:/app  
 
     restart: always
-    networks:
-      - myapp-network
+    # networks:
+      # - myapp-network
 
   frontend:
     build:
       context: src/dashboard
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     depends_on:
       - backend
     volumes:
-      - ./src/dashboard:/app  
+      - ./src/dashboard:/app/
     restart: always
-    networks:
-      - myapp-network
+    # networks:
+      # - myapp-network
+    environment:
+      HOST: 0.0.0.0
+      
 
   database:
     image: postgres:13
@@ -37,11 +41,11 @@ services:
       - "5432:5432" 
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Define a named volume for PostgreSQL data
-    networks:
-      - myapp-network
+    # networks:
+      # - myapp-network
 
-networks:
-  myapp-network:
+# networks:
+#   myapp-network:
 
 volumes:
   postgres_data:  # Define the named volume for PostgreSQL data

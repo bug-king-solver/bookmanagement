@@ -1,5 +1,5 @@
 import { getterTree, actionTree, mutationTree } from 'typed-vuex';
-import { Book } from './type';
+import { Book } from '../types';
 // Define mutation types
 const SET_BOOKS = 'SET_BOOKS';
 const ADD_BOOK = 'ADD_BOOK';
@@ -13,7 +13,7 @@ export const state = () => ({
 // export type BooksState = ReturnType<typeof state>;
 
 export const getters = getterTree(state, {
-    // books: (state) => state.books,
+    books: (state) => state.books,
 });
 export const mutations = mutationTree(state, {
     [SET_BOOKS](state, books: [Book]) {
@@ -38,31 +38,32 @@ export const actions = actionTree(
     {
         async fetchBooks({ commit }) {
             try {
-                const response = await this.$axios.$get(`books`);
-                commit(SET_BOOKS, response.data);
+                const response = await this.$axios.$get(`/api/books`);
+                commit(SET_BOOKS, response);
             } catch (error) {
                 console.error(error);
             }
         },
         async addBook({ commit }, book: Book) {
+            console.log(book);
             try {
-                const response = await this.$axios.$post(`users/${book.owner_id}/books`, book);
-                commit(ADD_BOOK, response.data);
+                const response = await this.$axios.$post(`/api/users/${book.owner_id}/books`, book);
+                commit(ADD_BOOK, response);
             } catch (error) {
                 console.error(error);
             }
         },
         async editBook({ commit }, book: Book) {
             try {
-                const response = await this.$axios.$put(`books/${book.id}`, book);
-                commit(EDIT_BOOK, response.data);
+                const response = await this.$axios.$put(`/api/books/${book.id}`, book);
+                commit(EDIT_BOOK, response);
             } catch (error) {
                 console.error(error);
             }
         },
         async deleteBook({ commit }, bookId: number) {
             try {
-                await this.$axios.$delete(`books/${bookId}`);
+                await this.$axios.$delete(`/api/books/${bookId}`);
                 commit(REMOVE_BOOK, bookId);
             } catch (error) {
                 console.error(error);

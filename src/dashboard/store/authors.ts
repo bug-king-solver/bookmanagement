@@ -1,7 +1,7 @@
 // store/authors.ts
 
 import { getterTree, actionTree, mutationTree } from 'typed-vuex';
-import { Author } from './type';
+import { Author } from '../types';
 
 // Define mutation types
 const SET_AUTHORS = 'SET_AUTHORS';
@@ -14,7 +14,7 @@ export const state = () => ({
 // export type AuthorsState = ReturnType<typeof state>;
 
 export const getters = getterTree(state, {
-    // authors: (state) => state.authors,
+    authors: (state) => state.authors,
 });
 
 export const mutations = mutationTree(state, {
@@ -37,24 +37,24 @@ export const actions = actionTree(
     {
         async fetchAuthors({ commit }) {
             try {
-                const response = await this.$axios.$get('authors'); // Replace with your API endpoint
-                commit(SET_AUTHORS, response.data);
+                const response = await this.$axios.$get('/api/authors'); // Replace with your API endpoint
+                commit(SET_AUTHORS, response);
             } catch (error) {
                 console.error('Error fetching authors:', error);
             }
         },
         async addAuthor({ commit }, authorData: { name: string }) {
             try {
-                const response = await this.$axios.$post('authors', { name: authorData.name }); // Replace with your API endpoint
-                commit(ADD_AUTHOR, response.data);
+                const response = await this.$axios.$post('/api/authors', { name: authorData.name }); // Replace with your API endpoint
+                commit(ADD_AUTHOR, response);
             } catch (error) {
                 console.error('Error adding author:', error);
             }
         },
         async editAuthor({ commit }, updatedAuthor: Author) {
             try {
-                const response = await this.$axios.$put(`authors/${updatedAuthor.id}`, updatedAuthor); // Replace with your API endpoint
-                commit(EDIT_AUTHOR, response.data);
+                const response = await this.$axios.$put(`/api/authors/${updatedAuthor.id}`, updatedAuthor); // Replace with your API endpoint
+                commit(EDIT_AUTHOR, response);
             } catch (error) {
                 console.error('Error editing author:', error);
             }

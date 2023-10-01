@@ -27,12 +27,13 @@ export const mutations = mutationTree(state, {
 export const actions = actionTree(
     { state, getters, mutations },
     {
-        async loginAction({ commit, dispatch, getters, state }, credentials: { username: string; password: string }) {
+        async loginAction({ commit }, credentials: { username: string; password: string }) {
             const { username, password } = credentials;
             try {
-                const res = await this.$axios.$post(`login`, { username, password });
-                const payload = { ...res.data.message, username };
+                const res = await this.$axios.$post(`/api/login`, { username, password });
+                const payload = { ...res, jwt: res?.access_token, username };
                 commit(SET_AUTH, payload);
+                setStoreItem('auth', payload);
                 return res;
             } catch (error) {
                 throw error; // Re-throw the error for handling in the component.

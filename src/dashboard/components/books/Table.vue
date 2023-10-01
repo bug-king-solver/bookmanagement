@@ -5,7 +5,7 @@
                 <b-input-group>
                     <b-form-input
                         id="book-name"
-                        v-model="newBook.title"
+                        v-model="newBook.name"
                         placeholder="Name"
                         class="mr-3"
                         required
@@ -50,7 +50,7 @@
                     {{ row.item.name }}
                 </template>
                 <template v-else>
-                    <b-form-input v-model="row.item.editTitle" />
+                    <b-form-input v-model="row.item.editname" />
                 </template>
             </template>
 
@@ -72,21 +72,18 @@
 <script lang="ts">
 interface BookItem extends Book {
     editMode: boolean;
-    editTitle: string;
+    editname: string;
     editPages: number;
 }
 import { ref, computed, defineComponent } from '@nuxtjs/composition-api';
 import { useAccessor } from '../../hooks/useAccessor'; // Replace with the actual path to your store
 import { cloneDeep } from 'lodash';
-import { Book } from '../../store/type';
+import { Book } from '../../types';
 export default defineComponent({
     setup() {
-        const {
-            books: { books, fetchBooks, addBook, editBook, deleteBook },
-            selected,
-        } = useAccessor(); // Replace with the actual structure of your accessor
+        const { addBook, editBook, deleteBook, books, selected } = useAccessor();
 
-        const newBook = ref({ title: '', pages: 0 });
+        const newBook = ref({ name: '', pages: 0 });
         const perPage = ref(4);
         const currentPage = ref(1);
 
@@ -97,17 +94,17 @@ export default defineComponent({
         ]);
 
         const shownBooks = computed(() => {
-            return books
-                .filter((book: Book) => book.owner_id === selected)
+            return books.value
+                .filter((book: Book) => book.owner_id === selected.value)
                 .map((book: Book) => ({
                     ...book,
                     editMode: false,
-                    editTitle: book.title,
+                    editname: book.name,
                     editPages: book.pages,
                 }));
         });
 
-        const rows = computed(() => books.length);
+        const rows = computed(() => books.value.length);
 
         const toggleEditMode = (book: BookItem) => {
             book.editMode = !book.editMode;
@@ -116,33 +113,32 @@ export default defineComponent({
         const saveChanges = (book: BookItem) => {
             const newBookData = {
                 id: book.id,
-                title: book.editTitle,
+                name: book.editname,
                 pages: book.editPages,
                 owner_id: book.owner_id,
             };
             editBook(newBookData);
-            book.title = newBookData.title;
+            book.name = newBookData.name;
             book.pages = newBookData.pages;
             book.editMode = false;
         };
 
         const cancelEdit = (book: BookItem) => {
             book.editMode = false;
-            book.editTitle = book.title;
+            book.editname = book.name;
             book.editPages = book.pages;
         };
 
         const createBook = () => {
-            const newBookData = {
+            const newBookData: Book = {
                 id: null,
-                title: newBook.value.title,
+                name: newBook.value.name,
                 pages: newBook.value.pages,
-                owner_id: selected,
+                owner_id: selected.value,
             };
             addBook(newBookData);
 
-            books.unshift(newBookData);
-            newBook.value.title = '';
+            newBook.value.name = '';
             newBook.value.pages = 0;
         };
 

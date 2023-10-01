@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
 
-from ..crud.author_crud import get_author,  get_authors, create_author, update_author
-from ..models.index import Author as AuthorModel
-from ..schemas.author_schemas import Author, AuthorCreate, AuthorUpdate
+from entity.utils.author_crud import   get_authors, create_author, update_author
+from entity.schemas.author_schemas import Author, AuthorCreate, AuthorUpdate
 # Make sure to have this file in your project
-from ..db.session import SessionLocal
+from entity.db.session import SessionLocal
 
 router = APIRouter()
 

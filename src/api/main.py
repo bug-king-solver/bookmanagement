@@ -1,9 +1,14 @@
-from common.db.session import SessionLocal
+from entity.db.session import SessionLocal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.auth import router as authRouter
-from api.authors import router as authorRouter
-from api.books import router as booksRouter
+from route.auth import router as authRouter
+from route.authors import router as authorRouter
+from route.books import router as booksRouter
+from dotenv import load_dotenv
+
+# Load environment variables from the .env file in the current directory
+load_dotenv()
+
 app = FastAPI()
 
 origins = [

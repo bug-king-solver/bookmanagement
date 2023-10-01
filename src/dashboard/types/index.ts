@@ -6,7 +6,7 @@ export interface Author {
 
 export interface Book {
     id: number | null;
-    title: string;
+    name: string;
     author?: string;
     owner_id: number | null;
     pages: number;

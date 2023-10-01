@@ -23,7 +23,13 @@ const config: NuxtConfig = {
         'bootstrap-vue/dist/bootstrap-vue.css',
     ],
 
-    plugins: ['@/plugins/fontawesome', '@/plugins/bootstrap-vue', '@/plugins/vue-toast', '@/plugins/axios'],
+    plugins: [
+        '@/plugins/vue-treeselect.ts',
+        '@/plugins/fontawesome',
+        '@/plugins/bootstrap-vue',
+        '@/plugins/vue-toast',
+        '@/plugins/axios',
+    ],
 
     components: true,
 
@@ -47,8 +53,7 @@ const config: NuxtConfig = {
         },
     },
     axios: {
-        prefix: '/api',
-        baseURL: process.env.BASE_API_URL,
+        baseURL: process.env.BASE_API_URL || 'http://localhost:8000',
         credentials: true,
         headers: {
             common: {
@@ -58,11 +63,10 @@ const config: NuxtConfig = {
             },
         },
     },
-
     build: {},
 
     env: {
-        BASE_API_URL: 'http://localhost:8000',
+        BASE_API_URL: process.env.BASE_API_URL || 'http://localhost:8000',
     },
 
     loading: false,

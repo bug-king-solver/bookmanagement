@@ -4,14 +4,13 @@ from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
 from pydantic import BaseSettings
-from ..models.index import Author
-from ..schemas.user_schemas import UserCredentials
+from entity.schemas.user_schemas import UserCredentials
+from service.auth import authenticate_user
 from typing import Optional
 
 app = FastAPI()
 
 router = APIRouter()
-
 
 class Settings(BaseSettings):
     authjwt_secret_key: str = "secret"
@@ -31,8 +30,7 @@ def authjwt_exception_handler(request: Request, exc: AuthJWTException):
 
 @router.post("/login")
 def login(user_credentials: UserCredentials, Authorize: AuthJWT = Depends()):
-    user = authenticate_user(
-        user_credentials.username, user_credentials.password)
+    user = authenticate_user(user_credentials.username, user_credentials.password)
     if user:
         access_token = Authorize.create_access_token(
             subject=user.name,

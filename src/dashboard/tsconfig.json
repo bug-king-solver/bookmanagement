@@ -15,7 +15,14 @@
             "~/*": ["./*"],
             "@/*": ["./*"]
         },
-        "types": ["@nuxt/types", "@nuxtjs/axios", "@types/node", "@nuxtjs/firebase", "@types/lodash"]
+        "types": [
+            "@nuxt/types",
+            "@nuxtjs/axios",
+            "@types/node",
+            "@nuxtjs/firebase",
+            "@types/lodash",
+            "unplugin-vue2-script-setup/types"
+        ]
     },
     "exclude": ["node_modules", ".nuxt", "dist"]
 }

@@ -6,6 +6,7 @@
         "dev": "nuxt",
         "build": "nuxt build",
         "start": "nuxt start",
+        "test":"jest",
         "generate": "nuxt generate",
         "lint:js": "eslint --ext \".js,.ts,.vue\" ",
         "lint:prettier": "prettier --check .",

@@ -1,9 +1,15 @@
 from datetime import datetime, timedelta
 from jose import jwt
 from typing import Optional
-from .schemas import TokenData
+# from .schemas import TokenData
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from entity.models.index import User
+from entity.utils.author_crud import get_user_by_name
 from passlib.context import CryptContext
-from jose import JWTError
+# from jose import JWTError
+from entity.db.session import SessionLocal  # Make sure to have this file in your project
+
 
 SECRET_KEY = "a_random_secret_key_for_demo_purposes"
 ALGORITHM = "HS256"
@@ -21,11 +27,11 @@ def get_user(username: str, db: Session = SessionLocal()) -> Optional[User]:
         raise HTTPException(status_code=404, detail="user not found")
     return db_author
 
-def authenticate_user(fake_db, username: str, password: str):
-    user = get_user(fake_db, username)
+def authenticate_user( username: str, password: str):
+    user = get_user(username)
     if not user:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password):
         return False
     return user
 
@@ -39,21 +45,21 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    user = get_user(fake_db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
+# def get_current_user(token: str = Depends(oauth2_scheme)):
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username: str = payload.get("sub")
+#         if username is None:
+#             raise credentials_exception
+#         token_data = TokenData(username=username)
+#     except JWTError:
+#         raise credentials_exception
+#     user = get_user(fake_db, username=token_data.username)
+#     if user is None:
+#         raise credentials_exception
+#     return user
